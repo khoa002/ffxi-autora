@@ -33,16 +33,17 @@ windower.register_event('load',function ()
 	Ammo_delay = 0
 	retrn = 0
 	halt_on_tp = true
+	halt_on_tp_value = 1000
 	windower.send_command('unbind ^d')
 	windower.send_command('unbind !d')
 	windower.send_command('bind ^d ara start')
 	windower.send_command('bind !d ara stop')
 	windower.send_command('alias ara lua c autora')
-	
+
 end)
-	
+
 function start()
-	windower.add_to_chat(17, 'AutoRA  STARTING~~~~~~~~~~~~~~')	
+	windower.add_to_chat(17, 'AutoRA STARTING~~~~~~~~~~~~~~')
 	player = windower.ffxi.get_player()
 	if player.status == 1 then
 		auto = 1
@@ -53,7 +54,7 @@ function start()
 end
 
 function stop()
-	windower.add_to_chat(17, 'AutoRA  STOPPING ~~~~~~~~~~~~~~')	
+	windower.add_to_chat(17, 'AutoRA STOPPING ~~~~~~~~~~~~~~')
 	auto = 0
 end
 
@@ -77,7 +78,7 @@ function split(msg, match)
 			if nextanch~=length then
 				u = nextanch+match:len()
 			else
-				u = lengthlua 
+				u = lengthlua
 			end
 		else
 			splitarr[#splitarr+1] = msg:sub(u,length)
@@ -88,25 +89,37 @@ function split(msg, match)
 end
 
 function haltontp()
-	
 	if halt_on_tp == true then
-		windower.add_to_chat(17, 'AutoRA will no longer halt upon reaching 1000 TP')
+		windower.add_to_chat(17, 'AutoRA will no longer halt upon reaching ' .. halt_on_tp_value .. ' TP')
 		halt_on_tp = false
 	elseif halt_on_tp == false then
-		windower.add_to_chat(17, 'AutoRA will halt upon reaching 1000 TP')
+		windower.add_to_chat(17, 'AutoRA will halt upon reaching ' .. halt_on_tp_value .. ' TP')
 		halt_on_tp = true
 	end
+end
 
+function sethalttp(halttpvalue)
+	if tonumber(halttpvalue) ~= nil then
+		halttpvalue = tonumber(halttpvalue)
+		if halttpvalue < 1000 or halttpvalue > 3000 then
+			windower.add_to_chat(17, 'AutoRA Halt TP value must be between 1000 and 3000')
+			return
+		end;
+		halt_on_tp_value = halttpvalue
+		windower.add_to_chat(17, 'AutoRA Halt TP set to ' .. halt_on_tp_value)
+	else
+		windower.add_to_chat(17, 'AutoRA Halt TP value not valid')
+	end;
 end
 
 windower.register_event('action',function (act)
 	local actor = act.actor_id
 	local category = act.category
 	local player = windower.ffxi.get_player()
-	
+
 	if ((actor == (player.id or player.index))) then
 		if category == 2 then
-			if player.vitals['tp'] < 1000 then
+			if player.vitals['tp'] < halt_on_tp_value then
 				if auto == 1 then
 					if  player.status == 1 then
 						auto = 1
@@ -121,7 +134,7 @@ windower.register_event('action',function (act)
 				end
 			else
 				if halt_on_tp == true then
-					windower.add_to_chat(17, 'AutoRA  HALTING AT 1000 TP ~~~~~~~~~~~~~~')
+					windower.add_to_chat(17, 'AutoRA HALTING AT '.. halt_on_tp_value .. ' TP ~~~~~~~~~~~~~~')
 					return
 				else
 					if auto == 1 then
@@ -156,13 +169,16 @@ windower.register_event('addon command',function (...)
 		setDelay()
 	elseif splitarr[1]:lower() == 'haltontp' then
 		haltontp()
+	elseif splitarr[1]:lower() == 'sethalttp' then
+		sethalttp(splitarr[2])
 	elseif splitarr[1]:lower() == 'help' then
 		windower.add_to_chat(17, 'AutoRA  v'..version..'commands:')
 		windower.add_to_chat(17, '//ara [options]')
-		windower.add_to_chat(17, '    start  	- Starts auto attack with ranged weapon')
-		windower.add_to_chat(17, '    stop   	- Stops auto attack with ranged weapon')
-		windower.add_to_chat(17, '    haltontp	- Toggles automatic halt upon reaching 1000 TP')
-		windower.add_to_chat(17, '    help   	- Displays this help text')
+		windower.add_to_chat(17, '    start - Starts auto attack with ranged weapon')
+		windower.add_to_chat(17, '    stop - Stops auto attack with ranged weapon')
+		windower.add_to_chat(17, '    haltontp - Toggles automatic halt upon reaching a set amount of TP')
+		windower.add_to_chat(17, '    sethalttp [value from 1000 to 3000]	- Set the TP to stop AutoRA')
+		windower.add_to_chat(17, '    help - Displays this help text')
 		windower.add_to_chat(17, ' ')
 		windower.add_to_chat(17, 'AutoRA will only automate ranged attacks if your status is "Engaged".  Otherwise it will always fire a single ranged attack.')
 		windower.add_to_chat(17, 'To start auto ranged attacks without commands use the key:  Ctrl+d')
