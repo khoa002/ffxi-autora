@@ -34,6 +34,7 @@ windower.register_event('load',function ()
 	retrn = 0
 	halt_on_tp = true
 	halt_on_tp_value = 3000
+	ws_to_use = "Blast Arrow"
 	windower.send_command('unbind ^d')
 	windower.send_command('unbind !d')
 	windower.send_command('bind ^d ara start')
@@ -47,7 +48,8 @@ function start()
 	if player.status == 1 then
 		auto = 1
 	elseif player.status == 0 then
-		auto = 0
+		auto = 1
+		windower.send_command('input /attack <t>')
 	end
 	shoot()
 end
@@ -81,6 +83,25 @@ function split(msg, match)
 		end
 	end
 	return splitarr
+end
+
+function split2(msg)
+	local text = msg
+	local spat, epat, buf, quoted = [=[^(['"])]=], [=[(['"])$]=]
+	for str in text:gmatch("%S+") do
+	  local squoted = str:match(spat)
+	  local equoted = str:match(epat)
+	  local escaped = str:match([=[(\*)['"]$]=])
+	  if squoted and not quoted and not equoted then
+	    buf, quoted = str, squoted
+	  elseif buf and equoted == quoted and #escaped % 2 == 0 then
+	    str, buf, quoted = buf .. ' ' .. str, nil, nil
+	  elseif buf then
+	    buf = buf .. ' ' .. str
+	  end
+	  if not buf then windower.add_to_chat(17, (str:gsub(spat,""):gsub(epat,""))) end
+	end
+	if buf then windower.add_to_chat(17, "Missing matching quote for "..buf) end
 end
 
 function haltontp()
@@ -128,7 +149,7 @@ windower.register_event('action',function (act)
 				elseif auto == 0 then
 				end
 			else
-				windower.send_command('@wait 1.5;input /ws "Split Shot" <t>')
+				windower.send_command('@wait 1.5;input /ws "' .. ws_to_use .. '" <t>')
 			end
 		end
 		if category == 3 then
@@ -153,6 +174,8 @@ windower.register_event('addon command',function (...)
 		haltontp()
 	elseif splitarr[1]:lower() == 'sethalttp' then
 		sethalttp(splitarr[2])
+	elseif splitarr[1]:lower() == 'splittest' then
+		split2(term)
 	elseif splitarr[1]:lower() == 'help' then
 		windower.add_to_chat(17, 'AutoRA  v'..version..'commands:')
 		windower.add_to_chat(17, '//ara [options]')
