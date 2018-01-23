@@ -33,13 +33,12 @@ windower.register_event('load',function ()
 	Ammo_delay = 0
 	retrn = 0
 	halt_on_tp = true
-	halt_on_tp_value = 1000
+	halt_on_tp_value = 3000
 	windower.send_command('unbind ^d')
 	windower.send_command('unbind !d')
 	windower.send_command('bind ^d ara start')
 	windower.send_command('bind !d ara stop')
 	windower.send_command('alias ara lua c autora')
-
 end)
 
 function start()
@@ -59,10 +58,6 @@ function stop()
 end
 
 function shoot()
-	windower.send_command('input /shoot <t>')
-end
-
-function shootOnce()
 	windower.send_command('input /shoot <t>')
 end
 
@@ -133,24 +128,11 @@ windower.register_event('action',function (act)
 				elseif auto == 0 then
 				end
 			else
-				if halt_on_tp == true then
-					windower.add_to_chat(17, 'AutoRA HALTING AT '.. halt_on_tp_value .. ' TP ~~~~~~~~~~~~~~')
-					return
-				else
-					if auto == 1 then
-						if  player.status == 1 then
-							auto = 1
-						elseif  player.status == 0 then
-							auto = 0
-							return
-						end
-					end
-					if auto == 1 then
-						windower.send_command('@wait 1.5;input /shoot <t>')
-					elseif auto == 0 then
-					end
-				end
+				windower.send_command('@wait 1.5;input /ws "Split Shot" <t>')
 			end
+		end
+		if category == 3 then
+			windower.send_command('@wait 2;input /shoot <t>')
 		end
 	end
 end)
