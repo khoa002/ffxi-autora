@@ -34,7 +34,9 @@ windower.register_event('load',function ()
 	retrn = 0
 	halt_on_tp = true
 	halt_on_tp_value = 3000
-	ws_to_use = "Blast Arrow"
+	auto_start = true
+	acting = false
+	ws_to_use = "Empyreal Arrow"
 	windower.send_command('unbind ^d')
 	windower.send_command('unbind !d')
 	windower.send_command('bind ^d ara start')
@@ -134,10 +136,12 @@ windower.register_event('action',function (act)
 	local player = windower.ffxi.get_player()
 
 	if ((actor == (player.id or player.index))) then
+		acting = true
 		if category == 2 then
+			acting = false
 			if player.vitals['tp'] < halt_on_tp_value then
 				if auto == 1 then
-					if  player.status == 1 then
+					if player.status == 1 then
 						auto = 1
 					elseif  player.status == 0 then
 						auto = 0
@@ -146,14 +150,29 @@ windower.register_event('action',function (act)
 				end
 				if auto == 1 then
 					windower.send_command('@wait 1.5;input /shoot <t>')
+					acting = true
 				elseif auto == 0 then
 				end
 			else
 				windower.send_command('@wait 1.5;input /ws "' .. ws_to_use .. '" <t>')
+				acting = true
 			end
 		end
 		if category == 3 then
 			windower.send_command('@wait 2;input /shoot <t>')
+			acting = true
+		end
+	else
+		if (act.targets ~= nil) then
+			for key, value in ipairs(act.targets) do
+				if value.id == (player.id or player.index) then
+					if auto == 1 and player.status == 1 and acting == false then
+						windower.add_to_chat(17, 'attempting to attack again...')
+						start()
+						return
+					end
+				end
+			end
 		end
 	end
 end)
