@@ -26,7 +26,6 @@
 
 
 windower.register_event('load',function ()
-
 	version = '2.1.2'
 	delay = 0
 	RW_delay = 0
@@ -36,7 +35,7 @@ windower.register_event('load',function ()
 	halt_on_tp_value = 3000
 	auto_start = true
 	acting = false
-	ws_to_use = "Empyreal Arrow"
+	ws_to_use = false
 	windower.send_command('unbind ^d')
 	windower.send_command('unbind !d')
 	windower.send_command('bind ^d ara start')
@@ -154,8 +153,10 @@ windower.register_event('action',function (act)
 				elseif auto == 0 then
 				end
 			else
-				windower.send_command('@wait 1.5;input /ws "' .. ws_to_use .. '" <t>')
-				acting = true
+				if ws_to_use ~= false then
+					windower.send_command('@wait 1.5;input /ws "' .. ws_to_use .. '" <t>')
+					acting = true
+				end
 			end
 		end
 		if category == 3 then
